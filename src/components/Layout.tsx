@@ -98,8 +98,8 @@ const Layout: React.FC<LayoutProps> = ({
       </List>
     </div>;
   return <Box className="flex flex-col min-h-screen">
-      <AppBar position="sticky" color="default" elevation={1} className="bg-white">
-        <Toolbar>
+      <AppBar position="sticky" color="default" elevation={1} className="bg-white dark:bg-gray-900">
+        <Toolbar className="container mx-auto px-4">
           {isMobile && <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleDrawerToggle} className="mr-2">
               <MenuIcon />
             </IconButton>}
@@ -164,7 +164,7 @@ const Layout: React.FC<LayoutProps> = ({
       <Container maxWidth="lg" className="flex-grow py-6">
         {children}
       </Container>
-      <Box component="footer" className="py-6 px-4 mt-8 bg-gray-50">
+      <Box component="footer" className="py-6 px-4 mt-auto bg-gray-50 dark:bg-gray-900">
         <Container maxWidth="lg">
           <Typography variant="body2" color="textSecondary" align="center">
             © {new Date().getFullYear()} Flavor Exchange. All rights reserved.

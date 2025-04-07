@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, TextField, InputAdornment, Grid, Box, Chip, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, CircularProgress } from '@mui/material';
+import { Typography, TextField, InputAdornment, Box, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, CircularProgress, useTheme } from '@mui/material';
 import { SearchIcon } from 'lucide-react';
 import { useRecipeStore } from '../store/recipeStore';
 import RecipeCard from '../components/RecipeCard';
+
 const Home: React.FC = () => {
+  const theme = useTheme();
   const {
     recipes,
     fetchRecipes,
@@ -28,47 +30,112 @@ const Home: React.FC = () => {
   const handleDietaryChange = (event: SelectChangeEvent) => {
     setDietaryFilter(event.target.value);
   };
-  return <div>
-      <Box className="text-center mb-8">
-        <Typography variant="h3" component="h1" className="font-bold mb-4">
+  return (
+    <Box className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" sx={{ bgcolor: 'background.default' }}>
+      <Box className="text-center mb-8 pt-8">
+        <Typography variant="h3" component="h1" className="font-bold mb-4" sx={{ color: 'text.primary' }}>
           Discover Delicious Recipes
         </Typography>
-        <Typography variant="h6" color="textSecondary" className="mb-6">
+        <Typography variant="h6" sx={{ color: 'text.secondary' }} className="mb-6">
           Find and share the best recipes from around the world
         </Typography>
       </Box>
-      <Box className="mb-8">
-      <Grid container spacing={3} alignItems="center">
-  <Grid xs={12} md={8}>  {/* Remove 'item' prop */}
-    <TextField fullWidth variant="outlined" /* ... */ />
-  </Grid>
-  <Grid xs={12} md={4}>  {/* Remove 'item' prop */}
-    <FormControl fullWidth variant="outlined">
-      {/* ... */}
-    </FormControl>
-  </Grid>
-</Grid>
 
-{/* Recipe cards grid */}
-<Grid container spacing={4}>
-  {filteredRecipes.map(recipe => (
-    <Grid key={recipe.id} xs={12} sm={6} md={4}>  {/* Remove 'item' prop */}
-      <RecipeCard recipe={recipe} />
-    </Grid>
-  ))}
-</Grid>
+      <Box className="mb-8">
+        <Box className="flex flex-col md:flex-row gap-4">
+          <Box className="flex-1">
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Search recipes by name or ingredients..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon size={20} className="text-gray-500" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'background.paper',
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'divider',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main',
+                  },
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'divider',
+                },
+                '& .MuiInputBase-input': {
+                  color: 'text.primary',
+                  '&::placeholder': {
+                    color: 'text.secondary',
+                    opacity: 0.7,
+                  },
+                },
+              }}
+            />
+          </Box>
+          <Box className="w-full md:w-1/3">
+            <FormControl fullWidth variant="outlined">
+              <InputLabel sx={{ color: 'text.secondary' }}>Dietary Preference</InputLabel>
+              <Select
+                value={dietaryFilter}
+                onChange={handleDietaryChange}
+                label="Dietary Preference"
+                sx={{
+                  bgcolor: 'background.paper',
+                  color: 'text.primary',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'divider',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'divider',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main',
+                  },
+                  '& .MuiSelect-icon': {
+                    color: 'text.secondary',
+                  },
+                }}
+              >
+                <MenuItem value="">All</MenuItem>
+                {dietaryOptions.map((option) => (
+                  <MenuItem key={option} value={option} sx={{ color: 'text.primary' }}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
       </Box>
-      {isLoading ? <Box className="flex justify-center py-12">
+
+      {isLoading ? (
+        <Box className="flex justify-center py-12">
           <CircularProgress />
-        </Box> : filteredRecipes.length > 0 ? <Grid container spacing={4}>
-          {filteredRecipes.map(recipe => <Grid item key={recipe.id} xs={12} sm={6} md={4}>
+        </Box>
+      ) : filteredRecipes.length > 0 ? (
+        <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+          {filteredRecipes.map((recipe) => (
+            <Box key={recipe.id} className="h-full">
               <RecipeCard recipe={recipe} />
-            </Grid>)}
-        </Grid> : <Box className="text-center py-12">
-          <Typography variant="h6" color="textSecondary">
+            </Box>
+          ))}
+        </Box>
+      ) : (
+        <Box className="text-center py-12">
+          <Typography variant="h6" sx={{ color: 'text.secondary' }}>
             No recipes found. Try adjusting your search.
           </Typography>
-        </Box>}
-    </div>;
+        </Box>
+      )}
+    </Box>
+  );
 };
 export default Home;

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Typography, Box, TextField, Button, Grid, Paper, FormControl, InputLabel, Select, MenuItem, Chip, OutlinedInput, ListItemText, Checkbox, SelectChangeEvent, IconButton, Alert, CircularProgress } from '@mui/material';
+import { Typography, Box, TextField, Button, Grid, Paper, FormControl, InputLabel, Select, MenuItem, Chip, OutlinedInput, ListItemText, Checkbox, SelectChangeEvent, IconButton, Alert, CircularProgress, useTheme } from '@mui/material';
 import { PlusIcon, MinusIcon, SaveIcon, ArrowLeftIcon } from 'lucide-react';
 import { useRecipeStore, Recipe } from '../store/recipeStore';
 import { useAuthStore } from '../store/authStore';
 const DIFFICULTY_OPTIONS = ['easy', 'medium', 'hard'];
 const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Low-Carb', 'Keto', 'Paleo', 'High Protein'];
 const CreateRecipe: React.FC = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const {
     addRecipe
@@ -118,125 +119,443 @@ const CreateRecipe: React.FC = () => {
   if (!isAuthenticated) {
     return null; // Will redirect in useEffect
   }
-  return <Box>
-      <Box className="mb-4">
-        <Button variant="text" color="inherit" onClick={() => navigate(-1)} startIcon={<ArrowLeftIcon size={18} />}>
+  return (
+    <Box className="min-h-screen" sx={{ bgcolor: 'background.default' }}>
+      <Box className="max-w-3xl mx-auto px-4 py-8">
+        <Button
+          variant="text"
+          color="inherit"
+          onClick={() => navigate(-1)}
+          startIcon={<ArrowLeftIcon size={18} />}
+          className="mb-6"
+          sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }}
+        >
           Back
         </Button>
-      </Box>
-      <Typography variant="h4" component="h1" className="font-bold mb-6">
-        Create New Recipe
-      </Typography>
-      {error && <Alert severity="error" className="mb-4">
-          {error}
-        </Alert>}
-      <Paper className="p-6">
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={4}>
-            <Grid item xs={12}>
-              <TextField label="Recipe Title" variant="outlined" fullWidth required value={title} onChange={e => setTitle(e.target.value)} />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField label="Description" variant="outlined" fullWidth multiline rows={3} required value={description} onChange={e => setDescription(e.target.value)} />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField label="Image URL" variant="outlined" fullWidth required value={image} onChange={e => setImage(e.target.value)} helperText="Enter a URL for your recipe image" />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField label="Cooking Time (minutes)" variant="outlined" fullWidth type="number" required value={cookingTime} onChange={e => setCookingTime(parseInt(e.target.value))} InputProps={{
-              inputProps: {
-                min: 1
-              }
-            }} />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField label="Servings" variant="outlined" fullWidth type="number" required value={servings} onChange={e => setServings(parseInt(e.target.value))} InputProps={{
-              inputProps: {
-                min: 1
-              }
-            }} />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth required>
-                <InputLabel id="difficulty-label">Difficulty</InputLabel>
-                <Select labelId="difficulty-label" value={difficulty} label="Difficulty" onChange={e => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}>
-                  {DIFFICULTY_OPTIONS.map(option => <MenuItem key={option} value={option}>
-                      {option.charAt(0).toUpperCase() + option.slice(1)}
-                    </MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6" className="mb-2">
-                Ingredients
-              </Typography>
-              {ingredients.map((ingredient, index) => <Box key={index} className="flex items-center mb-2">
-                  <TextField variant="outlined" fullWidth placeholder={`Ingredient ${index + 1}`} value={ingredient} onChange={e => handleIngredientChange(index, e.target.value)} required />
-                  <IconButton color="error" onClick={() => handleRemoveIngredient(index)} disabled={ingredients.length <= 1}>
-                    <MinusIcon size={20} />
-                  </IconButton>
-                </Box>)}
-              <Button startIcon={<PlusIcon size={18} />} onClick={handleAddIngredient} variant="outlined" className="mt-2">
+
+        <Typography variant="h4" component="h1" sx={{ color: 'text.primary', mb: 4, fontSize: '2rem' }}>
+          Create New Recipe
+        </Typography>
+
+        {error && (
+          <Alert severity="error" className="mb-8">
+            {error}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Basic Information */}
+          <Box className="space-y-4">
+            <TextField
+              label="Recipe Title"
+              variant="outlined"
+              fullWidth
+              required
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'background.paper',
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'divider',
+                },
+                '& .MuiInputBase-input': {
+                  color: 'text.primary',
+                },
+              }}
+            />
+            <TextField
+              label="Description"
+              variant="outlined"
+              fullWidth
+              multiline
+              rows={3}
+              required
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'background.paper',
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'divider',
+                },
+                '& .MuiInputBase-input': {
+                  color: 'text.primary',
+                },
+              }}
+            />
+            <TextField
+              label="Image URL"
+              variant="outlined"
+              fullWidth
+              required
+              value={image}
+              onChange={e => setImage(e.target.value)}
+              helperText="Enter a URL for your recipe image"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'background.paper',
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'divider',
+                },
+                '& .MuiInputBase-input': {
+                  color: 'text.primary',
+                },
+                '& .MuiFormHelperText-root': {
+                  color: 'text.secondary',
+                },
+              }}
+            />
+          </Box>
+
+          {/* Recipe Details */}
+          <Box className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <TextField
+              label="Cooking Time (minutes)"
+              variant="outlined"
+              fullWidth
+              type="number"
+              required
+              value={cookingTime}
+              onChange={e => setCookingTime(parseInt(e.target.value))}
+              InputProps={{
+                inputProps: { min: 1 }
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'background.paper',
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'divider',
+                },
+                '& .MuiInputBase-input': {
+                  color: 'text.primary',
+                },
+              }}
+            />
+            <TextField
+              label="Servings"
+              variant="outlined"
+              fullWidth
+              type="number"
+              required
+              value={servings}
+              onChange={e => setServings(parseInt(e.target.value))}
+              InputProps={{
+                inputProps: { min: 1 }
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: 'background.paper',
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'divider',
+                },
+                '& .MuiInputBase-input': {
+                  color: 'text.primary',
+                },
+              }}
+            />
+            <FormControl fullWidth required>
+              <InputLabel id="difficulty-label" sx={{ color: 'text.secondary' }}>
+                Difficulty
+              </InputLabel>
+              <Select
+                labelId="difficulty-label"
+                value={difficulty}
+                label="Difficulty"
+                onChange={e => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
+                sx={{
+                  bgcolor: 'background.paper',
+                  color: 'text.primary',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'divider',
+                  },
+                }}
+              >
+                {DIFFICULTY_OPTIONS.map(option => (
+                  <MenuItem key={option} value={option}>
+                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Ingredients */}
+          <Box className="space-y-4">
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>
+              Ingredients
+            </Typography>
+            <Box className="space-y-3">
+              {ingredients.map((ingredient, index) => (
+                <Box key={index} className="flex items-center gap-2">
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    placeholder={`Ingredient ${index + 1}`}
+                    value={ingredient}
+                    onChange={e => handleIngredientChange(index, e.target.value)}
+                    required
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'background.paper',
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'text.secondary',
+                      },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'divider',
+                      },
+                      '& .MuiInputBase-input': {
+                        color: 'text.primary',
+                        '&::placeholder': {
+                          color: 'text.secondary',
+                          opacity: 0.7,
+                        },
+                      },
+                    }}
+                  />
+                  {ingredients.length > 1 && (
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRemoveIngredient(index)}
+                      sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}
+                    >
+                      <MinusIcon size={16} />
+                    </IconButton>
+                  )}
+                </Box>
+              ))}
+              <Button
+                startIcon={<PlusIcon size={18} />}
+                onClick={handleAddIngredient}
+                variant="text"
+                color="primary"
+              >
                 Add Ingredient
               </Button>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6" className="mb-2">
-                Instructions
-              </Typography>
-              {instructions.map((instruction, index) => <Box key={index} className="flex items-start mb-3">
-                  <Box className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white mt-2 mr-2">
+            </Box>
+          </Box>
+
+          {/* Instructions */}
+          <Box className="space-y-4">
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>
+              Instructions
+            </Typography>
+            <Box className="space-y-4">
+              {instructions.map((instruction, index) => (
+                <Box key={index} className="flex items-start gap-3">
+                  <Box 
+                    className="flex items-center justify-center w-8 h-8 rounded-full shrink-0 mt-2"
+                    sx={{ 
+                      bgcolor: 'action.hover',
+                      color: 'text.secondary',
+                    }}
+                  >
                     <Typography variant="body2">{index + 1}</Typography>
                   </Box>
-                  <TextField variant="outlined" fullWidth placeholder={`Step ${index + 1}`} value={instruction} onChange={e => handleInstructionChange(index, e.target.value)} multiline rows={2} required />
-                  <IconButton color="error" onClick={() => handleRemoveInstruction(index)} disabled={instructions.length <= 1}>
-                    <MinusIcon size={20} />
-                  </IconButton>
-                </Box>)}
-              <Button startIcon={<PlusIcon size={18} />} onClick={handleAddInstruction} variant="outlined" className="mt-2">
+                  <Box className="flex-grow">
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      placeholder={`Step ${index + 1}`}
+                      value={instruction}
+                      onChange={e => handleInstructionChange(index, e.target.value)}
+                      multiline
+                      rows={2}
+                      required
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          bgcolor: 'background.paper',
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'text.secondary',
+                        },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'divider',
+                        },
+                        '& .MuiInputBase-input': {
+                          color: 'text.primary',
+                          '&::placeholder': {
+                            color: 'text.secondary',
+                            opacity: 0.7,
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
+                  {instructions.length > 1 && (
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRemoveInstruction(index)}
+                      sx={{ 
+                        color: 'text.secondary', 
+                        '&:hover': { color: 'error.main' },
+                        mt: 2
+                      }}
+                    >
+                      <MinusIcon size={16} />
+                    </IconButton>
+                  )}
+                </Box>
+              ))}
+              <Button
+                startIcon={<PlusIcon size={18} />}
+                onClick={handleAddInstruction}
+                variant="text"
+                color="primary"
+              >
                 Add Step
               </Button>
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel id="dietary-label">Dietary Information</InputLabel>
-                <Select labelId="dietary-label" multiple value={dietaryInfo} onChange={handleDietaryChange} input={<OutlinedInput label="Dietary Information" />} renderValue={selected => <Box className="flex flex-wrap gap-1">
-                      {selected.map(value => <Chip key={value} label={value} size="small" />)}
-                    </Box>}>
-                  {DIETARY_OPTIONS.map(option => <MenuItem key={option} value={option}>
-                      <Checkbox checked={dietaryInfo.indexOf(option) > -1} />
-                      <ListItemText primary={option} />
-                    </MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6" className="mb-2">
-                Tags
-              </Typography>
-              <Box className="flex flex-wrap gap-2 mb-3">
-                {tags.map(tag => <Chip key={tag} label={tag} onDelete={() => handleRemoveTag(tag)} />)}
+            </Box>
+          </Box>
+
+          {/* Dietary Information */}
+          <Box className="space-y-4">
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>
+              Dietary Information
+            </Typography>
+            <FormControl fullWidth>
+              <InputLabel id="dietary-label" sx={{ color: 'text.secondary' }}>
+                Dietary Information
+              </InputLabel>
+              <Select
+                labelId="dietary-label"
+                multiple
+                value={dietaryInfo}
+                onChange={handleDietaryChange}
+                input={<OutlinedInput label="Dietary Information" />}
+                renderValue={selected => (
+                  <Box className="flex flex-wrap gap-1">
+                    {selected.map(value => (
+                      <Chip 
+                        key={value} 
+                        label={value} 
+                        size="small"
+                        sx={{
+                          bgcolor: 'action.hover',
+                          color: 'text.primary',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+                sx={{
+                  bgcolor: 'background.paper',
+                  color: 'text.primary',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'divider',
+                  },
+                }}
+              >
+                {DIETARY_OPTIONS.map(option => (
+                  <MenuItem key={option} value={option}>
+                    <Checkbox checked={dietaryInfo.indexOf(option) > -1} />
+                    <ListItemText primary={option} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Tags */}
+          <Box className="space-y-4">
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>
+              Tags
+            </Typography>
+            <Box className="space-y-4">
+              <Box className="flex flex-wrap gap-2">
+                {tags.map(tag => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    onDelete={() => handleRemoveTag(tag)}
+                    sx={{
+                      bgcolor: 'action.hover',
+                      color: 'text.primary',
+                    }}
+                  />
+                ))}
               </Box>
-              <Box className="flex">
-                <TextField variant="outlined" placeholder="Add a tag (e.g., Italian, Dessert)" value={newTag} onChange={e => setNewTag(e.target.value)} onKeyPress={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddTag();
-                }
-              }} className="flex-grow" />
-                <Button onClick={handleAddTag} variant="contained" disabled={!newTag} className="ml-2">
+              <Box className="flex gap-2">
+                <TextField
+                  variant="outlined"
+                  placeholder="Add a tag (e.g., Italian, Dessert)"
+                  value={newTag}
+                  onChange={e => setNewTag(e.target.value)}
+                  onKeyPress={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  className="flex-grow"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: 'background.paper',
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'text.secondary',
+                    },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'divider',
+                    },
+                    '& .MuiInputBase-input': {
+                      color: 'text.primary',
+                      '&::placeholder': {
+                        color: 'text.secondary',
+                        opacity: 0.7,
+                      },
+                    },
+                  }}
+                />
+                <Button
+                  onClick={handleAddTag}
+                  variant="contained"
+                  disabled={!newTag}
+                  color="primary"
+                >
                   Add
                 </Button>
               </Box>
-            </Grid>
-            <Grid item xs={12} className="flex justify-end">
-              <Button type="submit" variant="contained" color="primary" size="large" disabled={isSubmitting} startIcon={<SaveIcon size={18} />}>
-                {isSubmitting ? <CircularProgress size={24} /> : 'Save Recipe'}
-              </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
+
+          {/* Submit Button */}
+          <Box className="flex justify-end">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              size="large"
+              disabled={isSubmitting}
+              startIcon={isSubmitting ? <CircularProgress size={20} /> : <SaveIcon size={18} />}
+            >
+              {isSubmitting ? 'Saving...' : 'Save Recipe'}
+            </Button>
+          </Box>
         </form>
-      </Paper>
-    </Box>;
+      </Box>
+    </Box>
+  );
 };
 export default CreateRecipe;
