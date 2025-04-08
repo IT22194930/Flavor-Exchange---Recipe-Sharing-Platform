@@ -9,14 +9,18 @@ import RecipeCard from '../components/RecipeCard';
 const MyRecipes: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { recipes, isLoading } = useRecipeStore();
+  const { recipes, isLoading, fetchRecipes } = useRecipeStore();
   const { isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
+      return;
     }
-  }, [isAuthenticated, navigate]);
+    
+    // Fetch latest recipes when component mounts
+    fetchRecipes();
+  }, [isAuthenticated, navigate, fetchRecipes]);
 
   const userRecipes = recipes.filter(recipe => recipe.author.id === user?.id);
 

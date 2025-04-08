@@ -299,8 +299,18 @@ const RecipeDetails: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={timerDialogOpen} onClose={() => setTimerDialogOpen(false)}>
-        <DialogTitle>Cooking Timer</DialogTitle>
+      <Dialog 
+        open={timerDialogOpen} 
+        onClose={() => setTimerDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            width: '100%',
+            maxWidth: '400px',
+            margin: '16px'
+          }
+        }}
+      >
+        <DialogTitle className='text-center font-bold'>Cooking Timer</DialogTitle>
         <DialogContent>
           <Timer initialMinutes={recipe.cookingTime} />
         </DialogContent>

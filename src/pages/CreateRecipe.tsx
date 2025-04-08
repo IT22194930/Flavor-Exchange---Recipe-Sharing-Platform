@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Typography, Box, TextField, Button, Grid, Paper, FormControl, InputLabel, Select, MenuItem, Chip, OutlinedInput, ListItemText, Checkbox, SelectChangeEvent, IconButton, Alert, CircularProgress, useTheme } from '@mui/material';
-import { PlusIcon, MinusIcon, SaveIcon, ArrowLeftIcon } from 'lucide-react';
+import { PlusIcon, MinusIcon, SaveIcon, ArrowLeftIcon, ImageIcon, XIcon } from 'lucide-react';
 import { useRecipeStore, Recipe } from '../store/recipeStore';
 import { useAuthStore } from '../store/authStore';
 const DIFFICULTY_OPTIONS = ['easy', 'medium', 'hard'];
@@ -18,7 +18,8 @@ const CreateRecipe: React.FC = () => {
   } = useAuthStore();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [cookingTime, setCookingTime] = useState(30);
   const [servings, setServings] = useState(4);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
@@ -74,6 +75,32 @@ const CreateRecipe: React.FC = () => {
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError('Image size should be less than 5MB');
+        return;
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file');
+        return;
+      }
+
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setError(null);
+    }
+  };
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview('');
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -90,10 +117,16 @@ const CreateRecipe: React.FC = () => {
       setError('Please fill in all instructions');
       return;
     }
-    const recipeData: Omit<Recipe, 'id' | 'createdAt'> = {
+    // Convert image to base64 for storage
+    const reader = new FileReader();
+    reader.readAsDataURL(image);
+    reader.onloadend = async () => {
+      const base64Image = reader.result as string;
+
+      const recipeData = {
       title,
       description,
-      image,
+        image: base64Image,
       cookingTime,
       servings,
       difficulty,
@@ -105,8 +138,10 @@ const CreateRecipe: React.FC = () => {
       },
       rating: 0,
       tags,
-      dietaryInfo
+        dietaryInfo,
+        substitutions: []
     };
+
     setIsSubmitting(true);
     try {
       const newRecipe = await addRecipe(recipeData);
@@ -115,6 +150,7 @@ const CreateRecipe: React.FC = () => {
       setError('Failed to create recipe. Please try again.');
       setIsSubmitting(false);
     }
+    };
   };
   if (!isAuthenticated) {
     return null; // Will redirect in useEffect
@@ -134,12 +170,12 @@ const CreateRecipe: React.FC = () => {
         </Button>
 
         <Typography variant="h4" component="h1" sx={{ color: 'text.primary', mb: 4, fontSize: '2rem' }}>
-          Create New Recipe
-        </Typography>
+        Create New Recipe
+      </Typography>
 
         {error && (
           <Alert severity="error" className="mb-8">
-            {error}
+          {error}
           </Alert>
         )}
 
@@ -192,31 +228,65 @@ const CreateRecipe: React.FC = () => {
                 },
               }}
             />
-            <TextField
-              label="Image URL"
-              variant="outlined"
-              fullWidth
-              required
-              value={image}
-              onChange={e => setImage(e.target.value)}
-              helperText="Enter a URL for your recipe image"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'background.paper',
-                },
-                '& .MuiInputLabel-root': {
-                  color: 'text.secondary',
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
+          </Box>
+
+          {/* Image Upload */}
+          <Box className="space-y-4">
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>
+              Recipe Image
+            </Typography>
+            
+            {imagePreview ? (
+              <Box className="relative w-full aspect-video rounded-lg overflow-hidden">
+                <img 
+                  src={imagePreview} 
+                  alt="Recipe preview" 
+                  className="w-full h-full object-cover"
+                />
+                <IconButton
+                  onClick={handleRemoveImage}
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    bgcolor: 'background.paper',
+                    '&:hover': {
+                      bgcolor: 'background.paper',
+                      opacity: 0.9,
+                    },
+                  }}
+                >
+                  <XIcon size={20} />
+                </IconButton>
+              </Box>
+            ) : (
+              <Box
+                className="flex flex-col items-center justify-center w-full aspect-video rounded-lg border-2 border-dashed cursor-pointer"
+                sx={{
                   borderColor: 'divider',
-                },
-                '& .MuiInputBase-input': {
-                  color: 'text.primary',
-                },
-                '& .MuiFormHelperText-root': {
-                  color: 'text.secondary',
-                },
-              }}
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                  },
+                }}
+                onClick={() => document.getElementById('recipe-image-input')?.click()}
+              >
+                <ImageIcon size={48} className="mb-2" style={{ opacity: 0.5 }} />
+                <Typography variant="body1" sx={{ color: 'text.secondary', mb: 1 }}>
+                  Click to upload recipe image
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', opacity: 0.7 }}>
+                  PNG, JPG up to 5MB
+                </Typography>
+              </Box>
+            )}
+            
+            <input
+              type="file"
+              id="recipe-image-input"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
             />
           </Box>
 
@@ -274,7 +344,7 @@ const CreateRecipe: React.FC = () => {
                 },
               }}
             />
-            <FormControl fullWidth required>
+              <FormControl fullWidth required>
               <InputLabel id="difficulty-label" sx={{ color: 'text.secondary' }}>
                 Difficulty
               </InputLabel>
@@ -293,18 +363,18 @@ const CreateRecipe: React.FC = () => {
               >
                 {DIFFICULTY_OPTIONS.map(option => (
                   <MenuItem key={option} value={option}>
-                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                      {option.charAt(0).toUpperCase() + option.slice(1)}
                   </MenuItem>
                 ))}
-              </Select>
-            </FormControl>
+                </Select>
+              </FormControl>
           </Box>
 
           {/* Ingredients */}
           <Box className="space-y-4">
             <Typography variant="h6" sx={{ color: 'text.primary' }}>
-              Ingredients
-            </Typography>
+                Ingredients
+              </Typography>
             <Box className="space-y-3">
               {ingredients.map((ingredient, index) => (
                 <Box key={index} className="flex items-center gap-2">
@@ -341,7 +411,7 @@ const CreateRecipe: React.FC = () => {
                       sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}
                     >
                       <MinusIcon size={16} />
-                    </IconButton>
+                  </IconButton>
                   )}
                 </Box>
               ))}
@@ -359,8 +429,8 @@ const CreateRecipe: React.FC = () => {
           {/* Instructions */}
           <Box className="space-y-4">
             <Typography variant="h6" sx={{ color: 'text.primary' }}>
-              Instructions
-            </Typography>
+                Instructions
+              </Typography>
             <Box className="space-y-4">
               {instructions.map((instruction, index) => (
                 <Box key={index} className="flex items-start gap-3">
@@ -414,7 +484,7 @@ const CreateRecipe: React.FC = () => {
                       }}
                     >
                       <MinusIcon size={16} />
-                    </IconButton>
+                  </IconButton>
                   )}
                 </Box>
               ))}
@@ -434,7 +504,7 @@ const CreateRecipe: React.FC = () => {
             <Typography variant="h6" sx={{ color: 'text.primary' }}>
               Dietary Information
             </Typography>
-            <FormControl fullWidth>
+              <FormControl fullWidth>
               <InputLabel id="dietary-label" sx={{ color: 'text.secondary' }}>
                 Dietary Information
               </InputLabel>
@@ -469,19 +539,19 @@ const CreateRecipe: React.FC = () => {
               >
                 {DIETARY_OPTIONS.map(option => (
                   <MenuItem key={option} value={option}>
-                    <Checkbox checked={dietaryInfo.indexOf(option) > -1} />
-                    <ListItemText primary={option} />
+                      <Checkbox checked={dietaryInfo.indexOf(option) > -1} />
+                      <ListItemText primary={option} />
                   </MenuItem>
                 ))}
-              </Select>
-            </FormControl>
+                </Select>
+              </FormControl>
           </Box>
 
           {/* Tags */}
           <Box className="space-y-4">
             <Typography variant="h6" sx={{ color: 'text.primary' }}>
-              Tags
-            </Typography>
+                Tags
+              </Typography>
             <Box className="space-y-4">
               <Box className="flex flex-wrap gap-2">
                 {tags.map(tag => (
@@ -503,10 +573,10 @@ const CreateRecipe: React.FC = () => {
                   value={newTag}
                   onChange={e => setNewTag(e.target.value)}
                   onKeyPress={e => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddTag();
+                }
                   }}
                   className="flex-grow"
                   sx={{
@@ -551,7 +621,7 @@ const CreateRecipe: React.FC = () => {
               startIcon={isSubmitting ? <CircularProgress size={20} /> : <SaveIcon size={18} />}
             >
               {isSubmitting ? 'Saving...' : 'Save Recipe'}
-            </Button>
+              </Button>
           </Box>
         </form>
       </Box>
