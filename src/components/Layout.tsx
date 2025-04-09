@@ -69,37 +69,71 @@ const Layout: React.FC<LayoutProps> = ({
       </Box>
       <Divider />
       <List>
-        {menuItems.map(item => (!item.requireAuth || isAuthenticated) && <ListItem button key={item.text} component={RouterLink} to={item.path} onClick={handleDrawerToggle} className="hover:bg-gray-100">
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>)}
-        {!isAuthenticated ? <>
-            <ListItem button component={RouterLink} to="/login" onClick={handleDrawerToggle} className="hover:bg-gray-100">
+        {menuItems.map(item => (!item.requireAuth || isAuthenticated) && (
+          <ListItem 
+            key={item.text} 
+            component={RouterLink} 
+            to={item.path} 
+            onClick={handleDrawerToggle}
+            sx={{ 
+              '&:hover': { bgcolor: 'action.hover' }
+            }}
+          >
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.text} />
+          </ListItem>
+        ))}
+        {!isAuthenticated ? (
+          <>
+            <ListItem 
+              component={RouterLink} 
+              to="/login" 
+              onClick={handleDrawerToggle}
+              sx={{ 
+                '&:hover': { bgcolor: 'action.hover' }
+              }}
+            >
               <ListItemIcon>
                 <LogInIcon size={20} />
               </ListItemIcon>
               <ListItemText primary="Login" />
             </ListItem>
-            <ListItem button component={RouterLink} to="/register" onClick={handleDrawerToggle} className="hover:bg-gray-100">
+            <ListItem 
+              component={RouterLink} 
+              to="/register" 
+              onClick={handleDrawerToggle}
+              sx={{ 
+                '&:hover': { bgcolor: 'action.hover' }
+              }}
+            >
               <ListItemIcon>
                 <UserIcon size={20} />
               </ListItemIcon>
               <ListItemText primary="Register" />
             </ListItem>
-          </> : <ListItem button onClick={() => {
-        handleLogout();
-        handleDrawerToggle();
-      }} className="hover:bg-gray-100">
+          </>
+        ) : (
+          <ListItem 
+            onClick={() => {
+              handleLogout();
+              handleDrawerToggle();
+            }}
+            sx={{ 
+              '&:hover': { bgcolor: 'action.hover' },
+              cursor: 'pointer'
+            }}
+          >
             <ListItemIcon>
               <LogOutIcon size={20} />
             </ListItemIcon>
             <ListItemText primary="Logout" />
-          </ListItem>}
+          </ListItem>
+        )}
       </List>
     </div>;
   return <Box className="flex flex-col min-h-screen">
-      <AppBar position="sticky" color="default" elevation={1} className="bg-white">
-        <Toolbar>
+      <AppBar position="sticky" color="default" elevation={1} className="bg-white dark:bg-gray-900">
+        <Toolbar className="container mx-auto px-4">
           {isMobile && <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleDrawerToggle} className="mr-2">
               <MenuIcon />
             </IconButton>}
@@ -164,9 +198,25 @@ const Layout: React.FC<LayoutProps> = ({
       <Container maxWidth="lg" className="flex-grow py-6">
         {children}
       </Container>
-      <Box component="footer" className="py-6 px-4 mt-8 bg-gray-50">
+      <Box 
+        component="footer" 
+        sx={{
+          py: 3,
+          px: 2,
+          mt: 'auto',
+          bgcolor: 'background.paper',
+          borderTop: 1,
+          borderColor: 'divider'
+        }}
+      >
         <Container maxWidth="lg">
-          <Typography variant="body2" color="textSecondary" align="center">
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: 'text.secondary',
+              textAlign: 'center'
+            }}
+          >
             © {new Date().getFullYear()} Flavor Exchange. All rights reserved.
           </Typography>
         </Container>
